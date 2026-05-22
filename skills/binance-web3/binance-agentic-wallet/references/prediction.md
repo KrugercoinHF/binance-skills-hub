@@ -136,6 +136,8 @@ baw prediction market order-book --marketId 789 --tokenId 123456789 --json
 
 Get the last trade price for a market.
 
+This is a **historical fill price**, not a live market quote — it can be stale if there have been no recent trades, and it does not reflect the current best bid/ask.
+
 ### Syntax
 
 ```bash
@@ -383,6 +385,7 @@ baw prediction trade quote --binanceChainId 56 --tokenId abc123 --marketTopicId 
     "expireAt": "2026-05-21T17:30:29+08:00",
     "chainId": "56",
     "orderType": "MARKET",
+    "slippageBps": 1000,
     "marketTitle": "No change"
   }
 }
@@ -406,24 +409,24 @@ Place an order using a `quoteId` obtained from `prediction trade quote`. This is
 ### Syntax
 
 ```bash
-baw prediction trade place-order --quoteId <quoteId> [--orderType <type>] [--slippageBps <bps>] [--priceLimit <price>] --json
+baw prediction trade place-order --quoteId <quoteId> --slippageBps <bps> [--orderType <type>] [--priceLimit <price>] --json
 ```
 
 ### Parameters
 
-| Parameter        | Required        | Default  | Description                                     |
-|------------------|-----------------|----------|-------------------------------------------------|
-| `--quoteId`      | Yes             | —        | Quote ID returned from `prediction trade quote` |
-| `--orderType`    | No              | `MARKET` | `MARKET` or `LIMIT`                             |
-| `--slippageBps`  | No              | `1200`   | Slippage in basis points (`1200` = 12%)         |
-| `--priceLimit`   | For LIMIT only  | —        | Limit price in USDT — required for LIMIT orders |
+| Parameter       | Required       | Default  | Description                                                      |
+|-----------------|----------------|----------|------------------------------------------------------------------|
+| `--quoteId`     | Yes            | —        | Quote ID returned from `prediction trade quote`                  |
+| `--slippageBps` | Yes            | —        | Slippage in basis points (from quote response slippageBps field) |
+| `--orderType`   | No             | `MARKET` | `MARKET` or `LIMIT`                                              |
+| `--priceLimit`  | For LIMIT only | —        | Limit price in USDT — required for LIMIT orders                  |
 
 ### Example
 
 ```bash
-baw prediction trade place-order --quoteId quote_abc123 --json
+baw prediction trade place-order --quoteId quote_abc123 --slippageBps 1000 --json
 
-baw prediction trade place-order --quoteId quote_abc123 --orderType LIMIT --priceLimit 0.6 --json
+baw prediction trade place-order --quoteId quote_abc123 --slippageBps 1000 --orderType LIMIT --priceLimit 0.6 --json
 ```
 
 ### Important: placing an order does not mean it is filled
