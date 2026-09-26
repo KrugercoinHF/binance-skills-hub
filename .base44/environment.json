@@ -2,5 +2,11 @@
   "previewPort": 3000,
   "healthPath": "/",
   "startCommand": "docker compose -f docker-compose.base44.yml up -d",
-  "secrets": []
+  "secrets": [
+    {
+      "name": "BINANCE_SQUARE_OPENAPI_KEY",
+      "description": "Binance Square OpenAPI key for publishing posts. Get yours at: https://www.binance.com/square/creator-center/home",
+      "requiredAtBoot": false
+    }
+  ]
 }

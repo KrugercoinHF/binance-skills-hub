@@ -5,6 +5,20 @@ import { generateInsights, summarize } from "./insights.js";
 import { pickTemplate } from "./postTemplates.js";
 import { publishToSquare } from "./squarePublisher.js";
 
+// Load env vars from platform secrets and local .env (does not override existing env)
+function loadEnv() {
+  const files = ["/run/base44/app.env", path.join(path.dirname(new URL(import.meta.url).pathname), "..", ".env")];
+  for (const file of files) {
+    if (!fs.existsSync(file)) continue;
+    for (const line of fs.readFileSync(file, "utf8").split("\n")) {
+      const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
+      if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+    }
+  }
+}
+
+loadEnv();
+
 const LOG_DIR = path.join(path.dirname(new URL(import.meta.url).pathname), "..", "logs");
 
 function logToFile(message) {
