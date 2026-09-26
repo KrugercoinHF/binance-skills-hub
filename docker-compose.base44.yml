@@ -22,3 +22,15 @@ services:
       - /run/base44/app.env
     profiles:
       - creator
+
+  scheduler:
+    image: node:22-slim
+    working_dir: /app/creator-generator
+    volumes:
+      - .:/app
+    command: node src/scheduler.js
+    env_file:
+      - /run/base44/app.env
+    environment:
+      - DAILY_SCHEDULE=${DAILY_SCHEDULE:-08:00}
+    restart: unless-stopped

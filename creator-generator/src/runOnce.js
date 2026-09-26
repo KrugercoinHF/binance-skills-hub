@@ -17,8 +17,6 @@ function loadEnv() {
   }
 }
 
-loadEnv();
-
 const LOG_DIR = path.join(path.dirname(new URL(import.meta.url).pathname), "..", "logs");
 
 function logToFile(message) {
@@ -28,8 +26,12 @@ function logToFile(message) {
   fs.appendFileSync(logFile, line);
 }
 
-async function main() {
-  const isDryRun = process.argv.includes("--dry-run");
+/**
+ * Run the full pipeline once: fetch data → generate insights → format → publish.
+ * @param {{ dryRun?: boolean }} opts
+ */
+export async function runPipeline(opts = {}) {
+  const { dryRun = false } = opts;
 
   console.log("Fetching market data...");
   const marketData = await getMarketData();
@@ -51,7 +53,7 @@ async function main() {
   console.log(`\n${post.text}\n`);
   console.log("--- End Post ---\n");
 
-  if (isDryRun) {
+  if (dryRun) {
     console.log("Dry run — skipping publish.");
     logToFile("Dry run completed");
     return;
@@ -63,11 +65,16 @@ async function main() {
   } catch (err) {
     console.error(`\nPublish failed: ${err.message}`);
     logToFile(`Publish failed: ${err.message}`);
-    process.exit(1);
+    throw err;
   }
 }
 
-main().catch((err) => {
-  console.error(`\nError: ${err.message}`);
-  process.exit(1);
-});
+// When run directly (not imported), execute once
+if (import.meta.url === `file://${process.argv[1]}`) {
+  loadEnv();
+  const isDryRun = process.argv.includes("--dry-run");
+  runPipeline({ dryRun: isDryRun }).catch((err) => {
+    console.error(`\nError: ${err.message}`);
+    process.exit(1);
+  });
+}
